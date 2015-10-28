@@ -23,8 +23,11 @@ public class BarrageView extends View {
     enum showMode{
         allScreen,
         topOfScreen,
-        bottomOfScreen
+        bottomOfScreen,
+     //   showOntheCenter
     }
+
+
     private TextPaint txtPaint;
     private int screenHeight;
     private int screenWidth;
@@ -32,10 +35,16 @@ public class BarrageView extends View {
     private LinkedList<Point> pos = new LinkedList();
     private LinkedList<String> txts = new LinkedList();
     private LinkedList<TextPaint> txtPaints = new LinkedList();
+
+    private LinkedList<centerPoint> centerPos = new LinkedList();
+    private LinkedList<TextPaint> centetTxtPaints = new LinkedList();
+    private LinkedList<String> centerTxts = new LinkedList();
+
     private  int speed = 4;
     private int txtSize = 30;
     private showMode mShowMode = showMode.topOfScreen;
-
+    private Random random = new Random();
+    private RollThread rollThread;
 
     public BarrageView(Context context) {
         this(context, null);
@@ -66,16 +75,27 @@ public class BarrageView extends View {
         {
             canvas.drawText(txts.get(i), pos.get(i).x, pos.get(i).y, txtPaints.get(i));
         }
+        for(int i =0;i<centerTxts.size();i++)
+        {
+            canvas.drawText(centerTxts.get(i), centerPos.get(i).x, centerPos.get(i).y, centetTxtPaints.get(i));
+            centerPos.get(i).flag = false;
+        }
+
         canvas.drawLine(0, screenHeight / 2, screenWidth, screenHeight / 2, new Paint());
         logic();
         invalidate();
+        if(rollThread == null)
+        {
+            rollThread = new RollThread();
+            rollThread.start();
+        }
 
     }
 
 
     private  void logic()
     {
-        x -= speed;
+
         for(int i =0;i<pos.size();i++)
         {
              pos.get(i).x -=speed;
@@ -87,6 +107,7 @@ public class BarrageView extends View {
             }
 
         }
+
         Log.v("gjh", "" + txts.size());
         Log.v("gjh", "txtPaints" + txtPaints.size());
     }
@@ -118,14 +139,17 @@ public class BarrageView extends View {
         switch (mode)
         {
             case allScreen:
-                y = (new Random()).nextInt(screenHeight-txtSize)+txtSize;
+                y = random.nextInt(screenHeight-txtSize)+txtSize;
                 break;
             case topOfScreen:
-                y = new Random().nextInt(screenHeight/2-txtSize)+txtSize;
+                y = random.nextInt(screenHeight / 2 - txtSize) + txtSize;
                 break;
             case bottomOfScreen:
-                y = new Random().nextInt(screenHeight/2-txtSize)+screenHeight/2-txtSize;
+                y = random.nextInt(screenHeight / 2 - txtSize) + screenHeight/2-txtSize;
                 break;
+//            case showOntheCenter:
+//                y = random.nextInt(screenHeight *3 / 4 - txtSize)+ screenHeight/2 - txtSize;
+//                break;
         }
         return y;
     }
@@ -153,12 +177,59 @@ public class BarrageView extends View {
         txts.add(txt);
     }
 
+    public void sendBarrageOnCenter(String txt)
+    {
+        centerTxts.add(txt);
+        x = (int)(screenWidth - txtPaint.measureText(centerTxts.getLast()))/2;
+        centerPos.add(new centerPoint(x,setYShowMode(showMode.bottomOfScreen)));
+        TextPaint newPanit = new TextPaint(txtPaint);
+        centetTxtPaints.add(newPanit);
+
+    }
+
+
+
     public void clearScreen()
     {
         pos.clear();
         txts.clear();
         txtPaints.clear();
+        centerTxts.clear();
+        centetTxtPaints.clear();
+        centerPos.clear();
     }
 
+    class RollThread extends Thread
+    {
+        @Override
+        public void run() {
+            while(true)
+            {
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                for(int i =0;i<centerTxts.size();i++)
+                {
+                   if(centerPos.get(i).flag ==false)
+                   {
+                       centerPos.remove(i);
+                       centerTxts.remove(i);
+                       centetTxtPaints.remove(i);
+                   }
+                }
+            }
+        }
+    }
 
+    class centerPoint{
+        int x,y;
+        boolean flag = true;
+
+        public centerPoint(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
 }
