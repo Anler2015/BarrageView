@@ -10,7 +10,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 
 
 import java.util.LinkedList;
@@ -32,12 +31,11 @@ public class BarrageView extends View {
     private int x,y = 0;
     private LinkedList<Point> pos = new LinkedList();
     private LinkedList<String> txts = new LinkedList();
+    private LinkedList<TextPaint> txtPaints = new LinkedList();
     private  int speed = 4;
-  //  private Paint.FontMetrics mFontMetrics;// 文本测量对象
     private int txtSize = 30;
     private showMode mShowMode = showMode.topOfScreen;
 
-    private Thread rollThread;
 
     public BarrageView(Context context) {
         this(context, null);
@@ -61,78 +59,17 @@ public class BarrageView extends View {
     }
 
 
-/*    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        screenHeight = h;
-        screenWidth = w;
-        x = w;
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-      //  setMeasuredDimension(measureWidth(widthMeasureSpec), measureHeight(heightMeasureSpec));
-
-    }
-
-    private int measureWidth(int widthMeasureSpec)
-    {
-        int result = 0;
-        int specMode = MeasureSpec.getMode(widthMeasureSpec);
-        int specSize = MeasureSpec.getSize(widthMeasureSpec);
-
-        if(specMode == MeasureSpec.EXACTLY)
-        {
-            result = specSize;
-        }
-        else
-        {
-            result = (int)txtPaint.measureText(txt)+1;
-            if(specMode == MeasureSpec.AT_MOST)
-            {
-                result = Math.min(result,specSize);
-            }
-        }
-        return result;
-    }
-
-    private  int measureHeight(int heightMeasureSpec )
-    {
-        int result = 0;
-        int specMode = MeasureSpec.getMode(heightMeasureSpec);
-        int specSize = MeasureSpec.getSize(heightMeasureSpec);
-
-        if(specMode == MeasureSpec.EXACTLY)
-        {
-            result = specSize;
-        }
-        else
-        {
-            result = txtSize;
-            if(specMode == MeasureSpec.AT_MOST)
-            {
-                result = Math.min(result,specSize);
-            }
-        }
-        return result;
-    }*/
-
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         for(int i =0;i<pos.size();i++)
         {
-            canvas.drawText(txts.get(i), pos.get(i).x, pos.get(i).y, txtPaint);
+            canvas.drawText(txts.get(i), pos.get(i).x, pos.get(i).y, txtPaints.get(i));
         }
         canvas.drawLine(0, screenHeight / 2, screenWidth, screenHeight / 2, new Paint());
         logic();
         invalidate();
-//       if (rollThread == null) {
-//            rollThread = new RollThread(canvas);
-//           rollThread.start();
-//        }
+
     }
 
 
@@ -146,10 +83,12 @@ public class BarrageView extends View {
             {
                 pos.remove(i);
                 txts.remove(i);
+                txtPaints.remove(i);
             }
-            Log.v("gjh",""+txts.size());
-        }
 
+        }
+        Log.v("gjh", "" + txts.size());
+        Log.v("gjh", "txtPaints" + txtPaints.size());
     }
 
 
@@ -208,30 +147,18 @@ public class BarrageView extends View {
 
     public void sendBarrage(String txt)
     {
-        pos.add(new Point(screenWidth,setYShowMode(mShowMode)));
+        pos.add(new Point(screenWidth, setYShowMode(mShowMode)));
+        TextPaint newPanit = new TextPaint(txtPaint);
+        txtPaints.add(newPanit);
         txts.add(txt);
     }
 
-    class RollThread extends Thread
+    public void clearScreen()
     {
-        Canvas canvas;
-        public RollThread(Canvas canvas) {
-            this.canvas = canvas;
-        }
-
-        @Override
-        public void run() {
-            while(true)
-            {
-                logic();
-                try {
-                    Thread.sleep(30);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                postInvalidate();
-            }
-
-        }
+        pos.clear();
+        txts.clear();
+        txtPaints.clear();
     }
+
+
 }
