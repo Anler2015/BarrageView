@@ -24,10 +24,7 @@ public class MainActivity extends Activity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //  barrageView.clearScreen();
-
-                barrageView.sendBarrageOnCenter("今天很开心");
-            //    barrageView.setYShowMode(BarrageView.showMode.topOfScreen);
+                barrageView.clearScreen();
             }
         });
 
@@ -40,7 +37,7 @@ public class MainActivity extends Activity {
                 int color = Color.rgb(random.nextInt(256), random.nextInt(256), random.nextInt(256));
                 barrageView.setTextColor(color);
                 barrageView.sendBarrage("你好");
-                barrageView.setTextSize(random.nextInt(100));
+
                 handler.postDelayed(this, DELAY_TIME);
             }
         };
