@@ -23,10 +23,8 @@ public class BarrageView extends View {
     enum showMode{
         allScreen,
         topOfScreen,
-        bottomOfScreen,
-     //   showOntheCenter
+        bottomOfScreen
     }
-
 
     private TextPaint txtPaint;
     private int screenHeight;
@@ -44,7 +42,7 @@ public class BarrageView extends View {
     private int txtSize = 30;
     private showMode mShowMode = showMode.topOfScreen;
     private Random random = new Random();
-    private RollThread rollThread;
+    private int showSeconds = 3;
 
     public BarrageView(Context context) {
         this(context, null);
@@ -55,7 +53,6 @@ public class BarrageView extends View {
         init();
     }
 
-
     private void init()
     {
         txtPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
@@ -64,9 +61,7 @@ public class BarrageView extends View {
         getWindowVisibleDisplayFrame(rect);
         screenWidth = rect.width();
         screenHeight = rect.height();
-
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -78,38 +73,36 @@ public class BarrageView extends View {
         for(int i =0;i<centerTxts.size();i++)
         {
             canvas.drawText(centerTxts.get(i), centerPos.get(i).x, centerPos.get(i).y, centetTxtPaints.get(i));
-            centerPos.get(i).flag = false;
         }
-
-        canvas.drawLine(0, screenHeight / 2, screenWidth, screenHeight / 2, new Paint());
         logic();
         invalidate();
-        if(rollThread == null)
-        {
-            rollThread = new RollThread();
-            rollThread.start();
-        }
-
     }
-
 
     private  void logic()
     {
 
         for(int i =0;i<pos.size();i++)
         {
-             pos.get(i).x -=speed;
+            pos.get(i).x -=speed;
             if(pos.get(i).x < -txtPaint.measureText(txts.get(i)))
             {
                 pos.remove(i);
                 txts.remove(i);
                 txtPaints.remove(i);
             }
+        }
+        for(int i =0;i<centerTxts.size();i++)
+        {
+            centerPos.get(i).endTime = System.currentTimeMillis();
 
+            if(centerPos.get(i).endTime - centerPos.get(i).startTime >= 1000 * showSeconds)
+            {
+                centerPos.remove(i);
+                centerTxts.remove(i);
+                centetTxtPaints.remove(i);
+            }
         }
 
-        Log.v("gjh", "" + txts.size());
-        Log.v("gjh", "txtPaints" + txtPaints.size());
     }
 
 
@@ -133,9 +126,14 @@ public class BarrageView extends View {
     {
         this.y = y;
     }
+
+    public void setShowSceonds(int i)
+    {
+        this.showSeconds = i;
+    }
+
     public int setYShowMode(showMode mode)
     {
-
         switch (mode)
         {
             case allScreen:
@@ -147,9 +145,6 @@ public class BarrageView extends View {
             case bottomOfScreen:
                 y = random.nextInt(screenHeight / 2 - txtSize) + screenHeight/2-txtSize;
                 break;
-//            case showOntheCenter:
-//                y = random.nextInt(screenHeight *3 / 4 - txtSize)+ screenHeight/2 - txtSize;
-//                break;
         }
         return y;
     }
@@ -181,13 +176,11 @@ public class BarrageView extends View {
     {
         centerTxts.add(txt);
         x = (int)(screenWidth - txtPaint.measureText(centerTxts.getLast()))/2;
-        centerPos.add(new centerPoint(x,setYShowMode(showMode.bottomOfScreen)));
+        centerPos.add(new centerPoint(x, setYShowMode(showMode.bottomOfScreen)));
+        centerPos.getLast().startTime = System.currentTimeMillis();
         TextPaint newPanit = new TextPaint(txtPaint);
         centetTxtPaints.add(newPanit);
-
     }
-
-
 
     public void clearScreen()
     {
@@ -199,33 +192,9 @@ public class BarrageView extends View {
         centerPos.clear();
     }
 
-    class RollThread extends Thread
-    {
-        @Override
-        public void run() {
-            while(true)
-            {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                for(int i =0;i<centerTxts.size();i++)
-                {
-                   if(centerPos.get(i).flag ==false)
-                   {
-                       centerPos.remove(i);
-                       centerTxts.remove(i);
-                       centetTxtPaints.remove(i);
-                   }
-                }
-            }
-        }
-    }
-
     class centerPoint{
         int x,y;
-        boolean flag = true;
+        long startTime,endTime;
 
         public centerPoint(int x, int y) {
             this.x = x;

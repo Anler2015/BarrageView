@@ -15,7 +15,15 @@
 
     <Button
         android:id="@+id/btn"
-          android:layout_width="100dp"
-         android:layout_height="100dp" />
+        android:text="sendBarrage"
+        android:layout_width="100dp"
+        android:layout_height="100dp" />
+
+    <Button
+        android:id="@+id/btn1"
+        android:text="clearScreen"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"/>
 
 </RelativeLayout>
